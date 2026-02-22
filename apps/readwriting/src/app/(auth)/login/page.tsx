@@ -4,7 +4,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 
-const appName = process.env.NEXT_PUBLIC_APP_NAME || "My App";
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "ReadWriting";
 
 export default async function LoginPage() {
   const session = await auth();
