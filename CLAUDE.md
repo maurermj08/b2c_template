@@ -26,9 +26,11 @@ cd apps/readwriting && npx playwright test  # E2E tests (Playwright)
 
 ## UI Validation Process
 
-**After ANY frontend change, run this checklist before committing:**
+**After ANY frontend change, follow this checklist before committing.**
 
-### Step 1: Build passes
+> "Give Claude a way to verify its work — this is the single highest-leverage thing you can do." — Anthropic Best Practices
+
+### Step 1: Build
 
 ```bash
 npx turbo build
@@ -36,19 +38,19 @@ npx turbo build
 
 All apps must compile with zero errors.
 
-### Step 2: Lint passes
+### Step 2: Lint
 
 ```bash
 npx turbo lint
 ```
 
-### Step 3: Unit tests pass
+### Step 3: Unit tests
 
 ```bash
 npx turbo test:unit
 ```
 
-### Step 4: E2E tests pass (Playwright)
+### Step 4: E2E tests (Playwright)
 
 ```bash
 cd apps/readwriting
@@ -67,22 +69,33 @@ When Playwright tests fail, **always read the screenshot** at:
 apps/readwriting/test-results/<test-name>/test-failed-1.png
 ```
 
-Use the Read tool to view the screenshot image — this is how you see the actual UI without a browser. Screenshots show what the user would see, so check for:
-- Correct branding (app name, logos)
+Use the Read tool to view the screenshot image — this is how you visually inspect the actual UI. Screenshots show what the user would see, so check for:
+- Correct branding (app name, logos) — never "My App" or other defaults
 - Correct page content and headings
 - Layout issues (overlapping elements, missing sections)
 - Broken states (error pages where there shouldn't be)
 
-### Step 6: Spot-check with curl (quick sanity)
+### Step 6: Spot-check routes
+
+Start the dev server and verify key routes return expected HTTP codes:
 
 ```bash
-# Start dev server, test key routes, stop
 npx turbo dev --filter=readwriting &
 sleep 12
-curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/       # 200
-curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/login  # 200
-curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/dashboard # 307 (redirect)
+curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/         # expect 200
+curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/login    # expect 200
+curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/dashboard # expect 307 (redirect)
 ```
+
+### Optional: Visual inspection with Playwright MCP
+
+For deeper visual validation (colors, layout, spacing), add the Playwright MCP server:
+
+```bash
+claude mcp add playwright -- npx @playwright/mcp@latest --headless
+```
+
+This exposes `browser_navigate`, `browser_snapshot`, and `browser_take_screenshot` tools so you can navigate to localhost and visually inspect pages in real-time — not just run pre-written tests.
 
 ## Writing E2E Tests
 
@@ -99,12 +112,12 @@ curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/dashboard # 307 (re
   ```
 - Always clean up test users in `afterEach` or `afterAll`
 
-## What Tests Should Cover
+## What Tests Must Cover
 
-Every user-visible page should have at least one E2E test asserting:
+Every user-visible page needs at least one E2E test asserting:
 1. **Correct heading/title text** — catches hardcoded fallbacks, missing env vars
 2. **Key interactive elements exist** — buttons, forms, links
-3. **Branding is consistent** — app name appears correctly, not "My App" or other defaults
+3. **Branding is consistent** — app name appears correctly everywhere
 4. **Protected routes redirect** — unauthenticated access goes to login
 5. **Core flows work end-to-end** — login, settings update, sign out
 
