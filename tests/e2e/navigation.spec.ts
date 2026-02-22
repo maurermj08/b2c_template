@@ -1,26 +1,17 @@
 import { test, expect } from "@playwright/test";
-import { getMagicLinkForEmail, cleanupTestUser } from "../helpers/auth-helper";
+import { loginAsUser, cleanupTestUser } from "../helpers/auth-helper";
 
 const TEST_EMAIL = "test-nav@example.com";
 
 test.describe("Navigation", () => {
-  test.beforeAll(async () => {
-    await cleanupTestUser(TEST_EMAIL);
-  });
-
   test.afterAll(async () => {
     await cleanupTestUser(TEST_EMAIL);
   });
 
   test("sidebar navigation works", async ({ page }) => {
-    // Login
-    await page.goto("/login");
-    await page.fill('input[name="email"]', TEST_EMAIL);
-    await page.click('button[type="submit"]');
-    await page.waitForURL("**/verify**", { timeout: 10000 });
-    const magicLink = await getMagicLinkForEmail(TEST_EMAIL);
-    await page.goto(magicLink);
-    await page.waitForURL("**/dashboard**", { timeout: 15000 });
+    await loginAsUser(page, TEST_EMAIL);
+    await page.goto("/dashboard");
+    await expect(page.locator("h1")).toContainText("Dashboard");
 
     // Navigate to Support
     await page.click('a[href="/support"]');

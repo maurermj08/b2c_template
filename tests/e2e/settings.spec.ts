@@ -1,30 +1,17 @@
 import { test, expect } from "@playwright/test";
-import { getMagicLinkForEmail, cleanupTestUser } from "../helpers/auth-helper";
+import { loginAsUser, cleanupTestUser } from "../helpers/auth-helper";
 
 const TEST_EMAIL = "test-settings@example.com";
 
 test.describe("Settings", () => {
-  test.beforeEach(async () => {
-    await cleanupTestUser(TEST_EMAIL);
-  });
-
   test.afterEach(async () => {
     await cleanupTestUser(TEST_EMAIL);
   });
 
   test("update display name", async ({ page }) => {
-    // Login
-    await page.goto("/login");
-    await page.fill('input[name="email"]', TEST_EMAIL);
-    await page.click('button[type="submit"]');
-    await page.waitForURL("**/verify**", { timeout: 10000 });
-    const magicLink = await getMagicLinkForEmail(TEST_EMAIL);
-    await page.goto(magicLink);
-    await page.waitForURL("**/dashboard**", { timeout: 15000 });
-
-    // Go to settings
-    await page.click('a[href="/settings"]');
-    await page.waitForURL("**/settings**");
+    await loginAsUser(page, TEST_EMAIL);
+    await page.goto("/settings");
+    await expect(page.locator("h1")).toContainText("Settings");
 
     // Update name
     await page.fill('input[name="name"]', "Test User");
@@ -40,25 +27,18 @@ test.describe("Settings", () => {
   });
 
   test("delete account with typed confirmation", async ({ page }) => {
-    // Login
-    await page.goto("/login");
-    await page.fill('input[name="email"]', TEST_EMAIL);
-    await page.click('button[type="submit"]');
-    await page.waitForURL("**/verify**", { timeout: 10000 });
-    const magicLink = await getMagicLinkForEmail(TEST_EMAIL);
-    await page.goto(magicLink);
-    await page.waitForURL("**/dashboard**", { timeout: 15000 });
-
-    // Go to settings
-    await page.click('a[href="/settings"]');
-    await page.waitForURL("**/settings**");
+    await loginAsUser(page, TEST_EMAIL);
+    await page.goto("/settings");
+    await expect(page.locator("h1")).toContainText("Settings");
 
     // Click delete account button
     await page.click('button:has-text("Delete My Account")');
 
     // Type wrong confirmation - button should be disabled
     await page.fill('input[id="confirm-delete"]', "WRONG");
-    const confirmButton = page.locator('button:has-text("Permanently Delete Account")');
+    const confirmButton = page.locator(
+      'button:has-text("Permanently Delete Account")'
+    );
     await expect(confirmButton).toBeDisabled();
 
     // Type correct confirmation

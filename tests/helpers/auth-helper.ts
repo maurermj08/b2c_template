@@ -1,35 +1,59 @@
 import { PrismaClient } from "@prisma/client";
+import type { Page } from "@playwright/test";
 
 const prisma = new PrismaClient();
 
-export async function getMagicLinkForEmail(
-  email: string,
-  timeout = 10000
-): Promise<string> {
-  const start = Date.now();
+/**
+ * Create a test user and a valid session directly in the database.
+ * This bypasses the magic link flow for tests that just need an authenticated user.
+ * Returns the session token that can be set as a cookie.
+ */
+export async function createAuthenticatedUser(email: string, name?: string) {
+  // Create or get the user
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: {},
+    create: {
+      email,
+      name: name || null,
+      emailVerified: new Date(),
+    },
+  });
 
-  while (Date.now() - start < timeout) {
-    const token = await prisma.verificationToken.findFirst({
-      where: { identifier: email },
-      orderBy: { expires: "desc" },
-    });
+  // Create a session that expires in 30 days
+  const sessionToken = `test-session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    if (token) {
-      const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-      const params = new URLSearchParams({
-        callbackUrl: "/dashboard",
-        token: token.token,
-        email: email,
-      });
-      return `${baseUrl}/api/auth/callback/email?${params}`;
-    }
+  await prisma.session.create({
+    data: {
+      sessionToken,
+      userId: user.id,
+      expires,
+    },
+  });
 
-    await new Promise((r) => setTimeout(r, 250));
-  }
+  return { user, sessionToken };
+}
 
-  throw new Error(
-    `No verification token found for ${email} after ${timeout}ms`
-  );
+/**
+ * Set the auth session cookie on a Playwright page.
+ */
+export async function loginAsUser(page: Page, email: string, name?: string) {
+  const { sessionToken } = await createAuthenticatedUser(email, name);
+
+  // Set the session cookie
+  await page.context().addCookies([
+    {
+      name: "authjs.session-token",
+      value: sessionToken,
+      domain: "localhost",
+      path: "/",
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+
+  return sessionToken;
 }
 
 export async function cleanupTestUser(email: string) {
