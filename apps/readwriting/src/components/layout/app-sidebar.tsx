@@ -6,7 +6,7 @@ import { LayoutDashboard, HelpCircle, Settings } from "lucide-react";
 import { SignOutButton } from "@/components/auth/signout-button";
 import { cn } from "@/lib/utils";
 
-const appName = process.env.NEXT_PUBLIC_APP_NAME || "My App";
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "ReadWriting";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
