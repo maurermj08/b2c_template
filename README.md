@@ -118,14 +118,20 @@ In development, magic links are printed to the **terminal console** instead of b
 
 ## Environment Variables
 
-Dev defaults are in `.env` (committed). Override anything by creating `.env.local` (gitignored):
+Each app has its own `.env` with safe dev defaults (committed). Override anything by creating `.env.local` in the same directory (gitignored):
+
+```
+apps/readwriting/.env          # Dev defaults (committed)
+apps/readwriting/.env.local    # Your overrides (gitignored)
+```
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DATABASE_URL` | `file:./dev.db` | SQLite for dev, PostgreSQL for prod |
+| `DATABASE_URL` | `file:./prisma/dev.db` | SQLite for dev, PostgreSQL for prod |
 | `AUTH_SECRET` | dev placeholder | Generate for prod: `npx auth secret` |
 | `NEXTAUTH_URL` | `http://localhost:3000` | Your app URL |
 | `NEXT_PUBLIC_APP_NAME` | `ReadWriting` | App name shown in UI |
+| `ANTHROPIC_API_KEY` | — | Required for handwriting transcription (set in `.env.local`) |
 | `RESEND_API_KEY` | — | For production email delivery |
 | `EMAIL_FROM` | — | Sender address for production emails |
 

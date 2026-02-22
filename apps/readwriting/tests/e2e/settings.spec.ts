@@ -11,7 +11,8 @@ test.describe("Settings", () => {
   test("update display name", async ({ page }) => {
     await loginAsUser(page, TEST_EMAIL);
     await page.goto("/settings");
-    await expect(page.locator("h1")).toContainText("Settings");
+    const main = page.locator("main");
+    await expect(main.locator("h1")).toContainText("Settings");
 
     // Update name
     await page.fill('input[name="name"]', "Test User");
@@ -29,7 +30,8 @@ test.describe("Settings", () => {
   test("delete account with typed confirmation", async ({ page }) => {
     await loginAsUser(page, TEST_EMAIL);
     await page.goto("/settings");
-    await expect(page.locator("h1")).toContainText("Settings");
+    const main = page.locator("main");
+    await expect(main.locator("h1")).toContainText("Settings");
 
     // Click delete account button
     await page.click('button:has-text("Delete My Account")');

@@ -9,9 +9,10 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/myapp
       - AUTH_SECRET=${AUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - EMAIL_FROM=${EMAIL_FROM:-}
-      - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-My App}
+      - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-ReadWriting}
     depends_on:
       db:
         condition: service_healthy
