@@ -1,44 +1,19 @@
 {
-  "name": "b2c_template",
-  "version": "0.1.0",
+  "name": "b2c-monorepo",
   "private": true,
+  "packageManager": "npm@10.9.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "test": "npx playwright test",
-    "test:unit": "vitest run"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
-  "dependencies": {
-    "@auth/prisma-adapter": "^2.11.1",
-    "@prisma/client": "^6.19.2",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.575.0",
-    "next": "16.1.6",
-    "next-auth": "^5.0.0-beta.30",
-    "nodemailer": "^7.0.13",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "resend": "^6.9.2",
-    "tailwind-merge": "^3.5.0"
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "test:unit": "turbo test:unit"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@vitejs/plugin-react": "^5.1.4",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "prisma": "^6.19.2",
-    "tailwindcss": "^4",
-    "tsx": "^4.21.0",
-    "typescript": "^5",
-    "vitest": "^4.0.18"
+    "turbo": "^2"
   }
 }
