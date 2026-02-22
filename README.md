@@ -1,35 +1,112 @@
-# B2C Starter Template
+# B2C Monorepo
 
-A reusable starter template for simple B2C web applications. Includes authentication, navigation, dashboard shell, user settings, support page, and responsive layout — all working end-to-end.
+A Turborepo monorepo for B2C web applications. Includes a fully working starter app (ReadWriting) with authentication, navigation, dashboard shell, user settings, support page, and responsive layout — plus an admin app scaffold.
 
 ## Tech Stack
 
+- **Turborepo** — monorepo build system
 - **Next.js 16** (App Router) + TypeScript
 - **Tailwind CSS v4**
 - **Prisma 6** with SQLite (dev) / PostgreSQL (prod)
 - **Auth.js v5** (next-auth@beta) — passwordless magic link auth
 - **Lucide React** icons
 
+## Monorepo Structure
+
+```
+apps/
+  readwriting/       # Main app — handwriting to digital text (port 3000)
+  admin/             # Admin dashboard (port 3001)
+packages/
+  ui/                # Shared UI components (@repo/ui)
+  db/                # Shared database package (@repo/db)
+  typescript-config/ # Shared TypeScript config (@repo/typescript-config)
+```
+
 ## Quick Start
 
 ```bash
-# Install dependencies
+# Install all dependencies (root + all workspaces)
 npm install
 
-# Generate Prisma client and run migrations
-npx prisma generate
-npx prisma migrate dev --name init
+# Generate Prisma client and run migrations for readwriting
+npx prisma generate --schema=apps/readwriting/prisma/schema.prisma
+npx prisma migrate dev --name init --schema=apps/readwriting/prisma/schema.prisma
 
 # Seed the database (creates a demo user)
-npx prisma db seed
+npm run -w readwriting prisma db seed
 
-# Start the dev server
-npm run dev
+# Start all apps
+turbo dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+| App | URL |
+|-----|-----|
+| ReadWriting | [http://localhost:3000](http://localhost:3000) |
+| Admin | [http://localhost:3001](http://localhost:3001) |
 
-That's it — the `.env` file is committed with safe dev defaults. No additional setup needed.
+## Turbo Commands
+
+```bash
+# Development
+turbo dev                        # Run all apps concurrently
+turbo dev --filter=readwriting   # Run only ReadWriting
+turbo dev --filter=admin         # Run only Admin
+
+# Build
+turbo build                      # Build all apps
+turbo build --filter=readwriting # Build only ReadWriting
+
+# Lint & Test
+turbo lint                       # Lint all apps
+turbo test                       # Playwright e2e tests (all apps)
+turbo test:unit                  # Vitest unit tests (all apps)
+```
+
+### Filtering
+
+Turborepo's `--filter` flag lets you target specific apps or packages:
+
+```bash
+turbo build --filter=readwriting        # Just the readwriting app
+turbo build --filter=admin              # Just the admin app
+turbo build --filter=./apps/*           # All apps
+turbo build --filter=./packages/*       # All packages
+turbo lint --filter=readwriting...      # Readwriting + its dependencies
+```
+
+### Caching
+
+Turborepo caches build outputs automatically. Subsequent builds skip work that hasn't changed:
+
+```bash
+turbo build                # First run — builds everything
+turbo build                # Second run — cache hit, near-instant
+turbo build --force        # Skip cache, rebuild everything
+```
+
+Cache artifacts are stored in `.turbo/` directories (gitignored).
+
+### Adding a New App
+
+1. Create a new directory under `apps/`
+2. Add a `package.json` with a unique `name` and the scripts you need (`dev`, `build`, `lint`)
+3. Run `npm install` from the root to link workspaces
+4. Turbo automatically picks it up — `turbo dev` will include it
+
+### Using Shared Packages
+
+Import shared packages by their workspace name:
+
+```tsx
+// In any app — import shared UI components
+import { Button } from "@repo/ui/button";
+
+// Import shared utilities
+import { cn } from "@repo/ui/utils";
+```
+
+Add new shared packages under `packages/` with a `package.json` that has a `name` starting with `@repo/`.
 
 ## How Auth Works
 
@@ -48,14 +125,14 @@ Dev defaults are in `.env` (committed). Override anything by creating `.env.loca
 | `DATABASE_URL` | `file:./dev.db` | SQLite for dev, PostgreSQL for prod |
 | `AUTH_SECRET` | dev placeholder | Generate for prod: `npx auth secret` |
 | `NEXTAUTH_URL` | `http://localhost:3000` | Your app URL |
-| `NEXT_PUBLIC_APP_NAME` | `My App` | App name shown in UI |
+| `NEXT_PUBLIC_APP_NAME` | `ReadWriting` | App name shown in UI |
 | `RESEND_API_KEY` | — | For production email delivery |
 | `EMAIL_FROM` | — | Sender address for production emails |
 
-## Project Structure
+## ReadWriting App Structure
 
 ```
-src/
+apps/readwriting/src/
   app/
     (auth)/          # Public auth pages (login, verify, auth-error)
     (app)/           # Authenticated pages (dashboard, settings, support)
@@ -68,16 +145,6 @@ src/
   lib/               # Auth config, Prisma client, utilities
 ```
 
-## Scripts
-
-```bash
-npm run dev      # Start dev server
-npm run build    # Production build
-npm run lint     # ESLint
-npm run test     # Playwright e2e tests
-npm run test:unit # Vitest unit tests
-```
-
 ## Docker Deployment
 
 ```bash
@@ -86,12 +153,3 @@ docker compose up
 ```
 
 The Docker setup uses PostgreSQL. Set `AUTH_SECRET` and update `DATABASE_URL` for production.
-
-## Customizing for Your Project
-
-1. Set `NEXT_PUBLIC_APP_NAME` in `.env.local`
-2. Add domain models in `prisma/schema.prisma`
-3. Add pages under `src/app/(app)/your-feature/`
-4. Add nav items in `app-sidebar.tsx` and `mobile-nav.tsx`
-5. Update landing page content and support FAQ
-6. Switch to PostgreSQL when deploying (see comments in schema)
