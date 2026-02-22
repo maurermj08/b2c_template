@@ -11,27 +11,32 @@ test.describe("Navigation", () => {
   test("sidebar navigation works", async ({ page }) => {
     await loginAsUser(page, TEST_EMAIL);
     await page.goto("/dashboard");
-    await expect(page.locator("h1")).toContainText("Dashboard");
+    const main = page.locator("main");
+    await expect(main.locator("h1")).toContainText("Dashboard");
 
     // Navigate to Support
     await page.click('a[href="/support"]');
     await page.waitForURL("**/support**");
-    await expect(page.locator("h1")).toContainText("Support");
+    await expect(main.locator("h1")).toContainText("Support");
 
     // Navigate to Settings
     await page.click('a[href="/settings"]');
     await page.waitForURL("**/settings**");
-    await expect(page.locator("h1")).toContainText("Settings");
+    await expect(main.locator("h1")).toContainText("Settings");
 
     // Navigate back to Dashboard
     await page.click('a[href="/dashboard"]');
     await page.waitForURL("**/dashboard**");
-    await expect(page.locator("h1")).toContainText("Dashboard");
+    await expect(main.locator("h1")).toContainText("Dashboard");
   });
 
-  test("landing page CTA works when logged out", async ({ page }) => {
+  test("landing page shows upload zone when logged out", async ({ page }) => {
     await page.goto("/");
-    const ctaButton = page.locator('a[href="/login"]').first();
-    await expect(ctaButton).toBeVisible();
+    await expect(page.locator("h1")).toContainText(
+      "Upload your writing. Get your text."
+    );
+    await expect(
+      page.locator('button:has-text("Choose File")')
+    ).toBeVisible();
   });
 });

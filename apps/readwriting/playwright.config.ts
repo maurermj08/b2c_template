@@ -11,7 +11,16 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        launchOptions: {
+          executablePath:
+            process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
+        },
+      },
+    },
   ],
   webServer: {
     command: "npm run dev",

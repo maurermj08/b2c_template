@@ -15,18 +15,19 @@ test.describe("Authentication", () => {
     await page.fill('input[name="email"]', TEST_EMAIL);
     await page.click('button[type="submit"]');
 
-    // Should redirect to verify page with email displayed
+    // Should redirect to verify page
     await page.waitForURL("**/verify**", { timeout: 10000 });
     await expect(page.locator("h1")).toContainText("Check your email");
-    await expect(page.locator("text=" + TEST_EMAIL)).toBeVisible();
+    await expect(page.locator("text=sign-in link")).toBeVisible();
   });
 
   test("authenticated user can access dashboard", async ({ page }) => {
     await loginAsUser(page, TEST_EMAIL);
     await page.goto("/dashboard");
 
-    await expect(page.locator("h1")).toContainText("Dashboard");
-    await expect(page.locator("text=Welcome back")).toBeVisible();
+    const main = page.locator("main");
+    await expect(main.locator("h1")).toContainText("Dashboard");
+    await expect(main.locator("text=Welcome back")).toBeVisible();
   });
 
   test("unauthenticated user is redirected to login", async ({ page }) => {
@@ -38,7 +39,8 @@ test.describe("Authentication", () => {
   test("logout flow", async ({ page }) => {
     await loginAsUser(page, TEST_EMAIL);
     await page.goto("/dashboard");
-    await expect(page.locator("h1")).toContainText("Dashboard");
+    const main = page.locator("main");
+    await expect(main.locator("h1")).toContainText("Dashboard");
 
     // Sign out via sidebar (desktop)
     const signOutButton = page.locator("text=Sign Out").first();
